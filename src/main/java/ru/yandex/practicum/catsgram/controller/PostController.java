@@ -1,32 +1,29 @@
 package ru.yandex.practicum.catsgram.controller;
 
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.catsgram.model.Post;
+import ru.yandex.practicum.catsgram.service.PostService;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@Slf4j
+@RequestMapping("/home")
 public class PostController {
+    private final PostService postService;
 
-    private List<Post> posts = new ArrayList<>();
-
-    @GetMapping("/home/posts")
-    public List<Post> findAll() {
-        log.debug("Текущее количество постов: {}", posts.size());
-        return posts;
+    @Autowired
+    public PostController(PostService postService) {
+        this.postService = postService;
     }
 
+    @GetMapping("/posts")
+    public List<Post> findAll() {
+        return postService.findAll();
+    }
 
-
-    @PostMapping("/home/post")
-    @ResponseBody
-    public void create(@RequestBody Post post, HttpServletRequest request) {
-        posts.add(post);
-        log.info("Получен запрос к эндпоинту: '{} {}', Строка параметров запроса: '{}'",
-                request.getMethod(), request.getRequestURI(), request.getQueryString());
+    @PostMapping(value = "/post")
+    public Post create(@RequestBody Post post) {
+        return postService.create(post);
     }
 }
