@@ -5,14 +5,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.catsgram.exception.IncorrectParameterException;
 import ru.yandex.practicum.catsgram.model.Post;
+import ru.yandex.practicum.catsgram.model.SerializationHelper;
 import ru.yandex.practicum.catsgram.service.PostService;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @RestController()
+@RequestMapping("/feed/friends")
 public class PostFeedController {
 
     private final PostService postService;
@@ -33,45 +37,25 @@ public class PostFeedController {
             throw new RuntimeException(e);
         }
 
-        if (serializationHelper != null) {
-            List<Post> result = new ArrayList<>();
-            for (String friend : serializationHelper.friendsEmail) {
-                result.addAll(postService.findAllByUserEmail(friend, serializationHelper.size, serializationHelper.sort));
-            }
-            return result;
-        } else {
-            throw new RuntimeException("Не удалось обработать запрос.");
+        if (!(serializationHelper.getSort().equals("asc") || serializationHelper.getSort().equals("desc"))) {
+            throw new IncorrectParameterException("sort");
         }
+
+        if (serializationHelper.getSize() == null || serializationHelper.getSize() <= 0) {
+            throw new IncorrectParameterException("size");
+        }
+
+        if (serializationHelper.getFriends().isEmpty()) {
+            throw new IncorrectParameterException("friendsEmails");
+        }
+
+        List<Post> result = new ArrayList<>();
+        for (String friend : serializationHelper.getFriends()) {
+            result.addAll(postService.findAllByUserEmail(friend, serializationHelper.getSize(), serializationHelper.getSort()));
+        }
+        return result;
+
     }
 
 
-    static class SerializationHelper {
-        private String sort;
-        private Integer size;
-        private List<String> friendsEmail;
-
-        public String getSort() {
-            return sort;
-        }
-
-        public void setSort(String sort) {
-            this.sort = sort;
-        }
-
-        public Integer getSize() {
-            return size;
-        }
-
-        public void setSize(Integer size) {
-            this.size = size;
-        }
-
-        public List<String> getFriends() {
-            return friendsEmail;
-        }
-
-        public void setFriends(List<String> friends) {
-            this.friendsEmail = friends;
-        }
-    }
 }
