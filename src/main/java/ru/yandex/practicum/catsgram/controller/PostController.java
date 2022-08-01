@@ -4,11 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.catsgram.exception.IncorrectParameterException;
 import ru.yandex.practicum.catsgram.model.Post;
-import ru.yandex.practicum.catsgram.model.User;
 import ru.yandex.practicum.catsgram.service.PostService;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 public class PostController {

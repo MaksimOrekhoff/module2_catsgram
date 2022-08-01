@@ -1,25 +1,36 @@
 package ru.yandex.practicum.catsgram.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.catsgram.service.HackCatService;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Optional;
 
-@Controller
+@RestController
 @Slf4j
 public class SimpleController {
-    // создаём логер
+    private final HackCatService hackCatService;
+
+    public SimpleController(HackCatService hackCatService) {
+        this.hackCatService = hackCatService;
+    }
+
+    @GetMapping("/do-hack")
+    public Optional<String> doHack() {
+        return hackCatService.doHackNow()
+                .map(password -> "Ура! Пароль подобран: " + password)
+                .or(() -> Optional.of("Не удалось подобрать пароль. "
+                        + " Проверьте состояние и настройки базы данных."));
+    }
 
     @GetMapping("/home")
     @ResponseBody
     public String homePage(HttpServletRequest request) {
-        // логируем факт получения запроса
-        log.info("Получен запрос к эндпоинту: '{} {}', Строка параметров запроса: '{}'",
-                request.getMethod(), request.getRequestURI(), request.getQueryString());
-
-        // возвращаем ответ в виде строки
         return "Котограм";
     }
+
+
 }
